@@ -12,13 +12,14 @@ use super::{Transport, Error};
 /// encrypted with TLS, using TCP.
 pub struct HttpsTransport {
     url: String,
+    token: Option<String>,
 }
 
 impl HttpsTransport {
 
     /// Creates a new HTTPS transport that connects to the given URL.
-    pub fn new(url: String) -> Self {
-        Self { url }
+    pub fn new(url: String, token: Option<String>) -> Self {
+        Self { url, token }
     }
 }
 
@@ -45,14 +46,22 @@ impl Transport for HttpsTransport {
         debug!("Connected");
 
         let request_bytes = request.to_bytes().expect("failed to serialise request");
-        let mut bytes_to_send = format!("\
+        let mut header_to_send = format!("\
             POST {} HTTP/1.1\r\n\
             Host: {}\r\n\
             Content-Type: application/dns-message\r\n\
             Accept: application/dns-message\r\n\
             User-Agent: {}\r\n\
-            Content-Length: {}\r\n\r\n",
-            path, domain, USER_AGENT, request_bytes.len()).into_bytes();
+            Content-Length: {}\r\n",
+            path, domain, USER_AGENT, request_bytes.len());
+        header_to_send = match &self.token {
+            Some(token) => {
+                header_to_send + &format!("Authorization: Bearer {}\r\n\r\n", token)
+            },
+            _ => header_to_send + "\r\n"
+        };
+        println!("{:?}", header_to_send);
+        let mut bytes_to_send = header_to_send.into_bytes();
         bytes_to_send.extend(request_bytes);
 
         info!("Sending {} bytes of data to {:?} over HTTPS", bytes_to_send.len(), self.url);
@@ -122,4 +131,3 @@ impl HttpsTransport {
 
 /// The User-Agent header sent with HTTPS requests.
 static USER_AGENT: &str = concat!("dog/", env!("CARGO_PKG_VERSION"));
-

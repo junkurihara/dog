@@ -41,6 +41,8 @@ pub struct Inputs {
 
     /// The list of transport types to send queries over.
     pub transport_types: Vec<TransportType>,
+
+    pub tokens: Vec<String>,
 }
 
 /// Weird protocol options that are allowed by the spec but are not common.
@@ -110,7 +112,7 @@ impl RequestGenerator {
                             }
 
                             let nameserver = resolver.nameserver();
-                            let transport = transport_type.make_transport(nameserver);
+                            let transport = transport_type.make_transport(nameserver, &self.inputs.tokens);
 
                             let mut request_list = Vec::new();
                             for qname in resolver.name_list(domain) {

@@ -61,6 +61,7 @@ impl Options {
         opts.optflag ("T", "tcp",          "Use the DNS protocol over TCP");
         opts.optflag ("S", "tls",          "Use the DNS-over-TLS protocol");
         opts.optflag ("H", "https",        "Use the DNS-over-HTTPS protocol");
+        opts.optopt  ("",  "token",        "Set a JSON Web Token for DoH with authentication", "TOKEN");
 
         // Output options
         opts.optopt  ("",  "color",        "When to use terminal colors",  "WHEN");
@@ -191,6 +192,10 @@ impl Inputs {
             }
         }
 
+        for token in matches.opt_strs("token") {
+            self.add_token(&token);
+        }
+
         Ok(())
     }
 
@@ -273,6 +278,10 @@ impl Inputs {
 
     fn add_class(&mut self, class: QClass) {
         self.classes.push(class);
+    }
+
+    fn add_token(&mut self, token: &str) {
+        self.tokens.push(token.to_string());
     }
 }
 
@@ -519,6 +528,7 @@ mod test {
                 classes:         vec![ QClass::IN ],
                 resolver_types:  vec![ ResolverType::SystemDefault ],
                 transport_types: vec![ TransportType::Automatic ],
+                tokens:          vec![],
             }
         }
     }
