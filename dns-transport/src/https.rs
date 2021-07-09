@@ -60,7 +60,7 @@ impl Transport for HttpsTransport {
             },
             _ => header_to_send + "\r\n"
         };
-        println!("{:?}", header_to_send);
+        debug!("{:?}", header_to_send);
         let mut bytes_to_send = header_to_send.into_bytes();
         bytes_to_send.extend(request_bytes);
 
